@@ -105,18 +105,18 @@ end;
 
 method FBDatabase.Execute(commandText: String; parameters: Dictionary<String, Object>): Integer;
 begin
-  var &result: Integer := 0;
+  var fresult: Integer := 0;
   if String.IsNullOrEmpty(commandText) then begin
     raise new ArgumentException('Command text cannot be null or empty.');
   end;
   try
     EnsureConnectionOpen();
     var command:FbCommand := CreateCommand(commandText, parameters);
-    &result := command.ExecuteNonQuery();
+    fresult := command.ExecuteNonQuery();
   finally
     _connection.Close();
   end;
-  exit &result;
+  exit fresult;
 end;
 
 method FBDatabase.QueryValue(commandText: String; parameters: Dictionary<String, Object>): Object;
