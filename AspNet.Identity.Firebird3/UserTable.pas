@@ -221,8 +221,8 @@ begin
   var commandText: String := 'Select SecurityStamp from Users where Id = @id';
   var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
   parameters.Add('@id', userId);
-  var &result := _database.GetStrValue(commandText, parameters);
-  exit &result;
+  var fresult := _database.GetStrValue(commandText, parameters);
+  exit fresult;
 end;
 
 method UserTable<TUser>.Insert(user: TUser): Integer;

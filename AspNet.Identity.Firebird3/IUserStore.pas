@@ -6,9 +6,8 @@ uses
   System;
 
 type
-  IUserStore2 <IdentityRole> = private interface 
+  IUserStore2<IdentityRole> = private interface 
     property Database: FBDatabase read write;
-   // property Users: System.Linq.IQueryable<IdentityRole> read write;
     method AddClaimAsync(user: IdentityRole; claim: System.Security.Claims.Claim): System.Threading.Tasks.Task;
     method AddLoginAsync(user: IdentityRole; login: Microsoft.AspNet.Identity.UserLoginInfo): System.Threading.Tasks.Task;
     method AddToRoleAsync(user: IdentityRole; roleName: String): System.Threading.Tasks.Task;

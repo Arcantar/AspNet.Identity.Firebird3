@@ -69,7 +69,7 @@ method RoleTable.Delete(roleId: String): Integer;
 begin
   var commandText: String := 'Delete from Roles where Id = @id';
   var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
-  parameters.&Add('@id', roleId);
+  parameters.Add('@id', roleId);
   exit _database.Execute(commandText, parameters);
 end;
 
@@ -77,8 +77,8 @@ method RoleTable.Insert(role: IdentityRole): Integer;
 begin
   var commandText: String := 'Insert into Roles (Id, Name) values (@id, @name)';
   var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
-  parameters.&Add('@name', role.Name);
-  parameters.&Add('@id', role.Id);
+  parameters.Add('@name', role.Name);
+  parameters.Add('@id', role.Id);
   exit _database.Execute(commandText, parameters);
 end;
 
@@ -96,9 +96,9 @@ begin
   var commandText: String := 'Select Id from Roles where Name = @name';
   var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
   parameters.Add('@name', roleName);
-  var &result := _database.QueryValue(commandText, parameters);
-  if &result <> nil then begin
-    exit Convert.ToString(&result);
+  var fresult := _database.QueryValue(commandText, parameters);
+  if fresult <> nil then begin
+    exit Convert.ToString(fresult);
   end;
   exit roleId;
 end;
@@ -127,7 +127,7 @@ method RoleTable.Update(role: IdentityRole): Integer;
 begin
   var commandText: String := 'Update Roles set Name = @name where Id = @id';
   var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
-  parameters.&Add('@id', role.Id);
+  parameters.Add('@id', role.Id);
   exit _database.Execute(commandText, parameters);
 end;
 

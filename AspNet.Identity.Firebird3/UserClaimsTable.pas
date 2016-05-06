@@ -92,7 +92,7 @@ begin
   var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
   parameters.Add('userId', user.Id);
   parameters.Add('value', claim.Value);
-  parameters.Add('type', claim.&Type);
+  parameters.Add('type', claim.Type);
   exit _database.Execute(commandText, parameters);
 end;
 

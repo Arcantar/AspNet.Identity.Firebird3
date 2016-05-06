@@ -79,14 +79,14 @@ end;
 
 method RoleStore<TRole>.FindByIdAsync(roleId: String): Task<TRole>;
 begin
-  var &result: TRole := TRole(roleTable.GetRoleById(roleId));
-  exit Task.FromResult(&result);
+  var fresult: TRole := TRole(roleTable.GetRoleById(roleId));
+  exit Task.FromResult(fresult);
 end;
 
 method RoleStore<TRole>.FindByNameAsync(roleName: String): Task<TRole>;
 begin
-  var &result: TRole := TRole(roleTable.GetRoleByName(roleName));
-  exit Task.FromResult(&result);
+  var fresult: TRole := TRole(roleTable.GetRoleByName(roleName));
+  exit Task.FromResult(fresult);
 end;
 
 method RoleStore<TRole>.UpdateAsync(role: TRole): Task;
