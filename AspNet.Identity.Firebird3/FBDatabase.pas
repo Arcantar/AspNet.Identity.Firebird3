@@ -121,18 +121,18 @@ end;
 
 method FBDatabase.QueryValue(commandText: String; parameters: Dictionary<String, Object>): Object;
 begin
-  var &result: Object := nil;
+  var fresult: Object := nil;
   if String.IsNullOrEmpty(commandText) then begin
     raise new ArgumentException('Command text cannot be null or empty.');
   end;
   try
     EnsureConnectionOpen();
     var command := CreateCommand(commandText, parameters);
-    &result := command.ExecuteScalar();
+    fresult := command.ExecuteScalar();
   finally
     EnsureConnectionClosed();
   end;
-  exit &result;
+  exit fresult;
 end;
 
 method FBDatabase.Query(commandText: String; parameters: Dictionary<String, Object>): List<Dictionary<String, String>>;
@@ -152,9 +152,9 @@ begin
         for i:Int32 := 0 to reader.FieldCount-1 do begin
           var columnName := reader.GetName(i);
           var columnValue := if reader.IsDBNull(i) then nil else reader.GetString(i);
-          row.&Add(columnName, columnValue);
+          row.Add(columnName, columnValue);
         end;
-        rows.&Add(row);
+        rows.Add(row);
       end;
     end;
   finally
@@ -165,18 +165,14 @@ end;
 
 method FBDatabase.QueryToReader(commandText: String; parameters: Dictionary<String, Object>): IDataReader;
 begin
-  var rows: List<Dictionary<String, String>> := nil;
+ // var rows: List<Dictionary<String, String>> := nil;
   if String.IsNullOrEmpty(commandText) then begin
     raise new ArgumentException('Command text cannot be null or empty.');
   end;
   var reader: FbDataReader;
- // try
     EnsureConnectionOpen();
     var command := CreateCommand(commandText, parameters);
     reader:= command.ExecuteReader(CommandBehavior.CloseConnection);
-//  finally
-//    EnsureConnectionClosed();
-//  end;
   exit reader;
 end;
 
@@ -191,7 +187,6 @@ begin
     while (retries >= 0) and (_connection.State <> ConnectionState.Open) do begin
       _connection.Open();
       dec(retries);
-     // Thread.Sleep(30); //??
     end;
   end;
 end;
@@ -220,7 +215,7 @@ begin
     var parameter := command.CreateParameter();
     parameter.ParameterName := param.Key;
     parameter.Value := param.Value ;
-    command.Parameters.&Add(parameter);
+    command.Parameters.Add(parameter);
   end;
 end;
 
