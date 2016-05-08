@@ -317,15 +317,6 @@ begin
   userLoginsTable := new UserLoginsTable(Database);
 end;
 
-//constructor UserStore2;
-//begin
-//  new UserStore2(new FBDatabase());
-//end;
-//
-//constructor UserStore2(context: FBDatabase);
-//begin
-//  Database := context;
-//end;
 
 method UserStore<TUser>.CreateAsync(user: TUser): Task;
 begin
@@ -341,9 +332,9 @@ begin
   if String.IsNullOrEmpty(userId) then begin
     raise new ArgumentException('Null or empty argument: userId');
   end;
-  var &result: TUser := TUser(userTable.GetUserById(userId));
-  if &result <> nil then begin
-    exit Task.FromResult<TUser>(&result);
+  var fresult: TUser := TUser(userTable.GetUserById(userId));
+  if fresult <> nil then begin
+    exit Task.FromResult<TUser>(fresult);
   end;
   exit Task.FromResult<TUser>(nil);
 end;
@@ -353,10 +344,10 @@ begin
   if String.IsNullOrEmpty(userName) then begin
     raise new ArgumentException('Null or empty argument: userName');
   end;
-  var &result: List<TUser> := userTable.GetUserByName(userName) ;//List<TUser>(  as TUser)
+  var fresult: List<TUser> := userTable.GetUserByName(userName) ;
   //  Should I throw if > 1 user?
-  if (&result <> nil) and (&result.Count <> 0) then begin
-    exit Task.FromResult<TUser>(&result[0]);
+  if (fresult <> nil) and (fresult.Count <> 0) then begin
+    exit Task.FromResult<TUser>(fresult[0]);
   end;
   exit Task.FromResult<TUser>(nil);
 end;
