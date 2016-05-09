@@ -17,7 +17,9 @@ type
   /// </summary>
   FBDatabase = public class(IDisposable)
   private
-    var _connection: FbConnection;
+   // var _connection: FbConnection;
+    var _connectionstring : String;
+    method dbConnection_StateChange(sender: Object; ev: StateChangeEventArgs);
   public
     /// Default constructor which uses the "DefaultConnection" connectionString
     /// </summary>
@@ -88,6 +90,9 @@ type
     /// <param name="parameters">Parameters to pass to the FBDatabase query</param>
     /// <returns>The string value resulting from the query</returns>
     method GetStrValue(commandText: String; parameters: Dictionary<String, Object>): String;
+   // property connection :FbConnection read _connection; 
+    property connectionString :String read _connectionstring; 
+
     method Dispose;
   end;
 
@@ -95,12 +100,16 @@ implementation
 
 constructor FBDatabase;
 begin
+    _connectionstring := ConfigurationManager.ConnectionStrings['DefaultConnection'].ConnectionString;
+ // _connection := new FbConnection(_connectionstring);
+ // _connection.StateChange += dbConnection_StateChange;
 end;
 
 constructor FBDatabase(connectionStringName: String);
 begin
-  var connectionString: String := ConfigurationManager.ConnectionStrings[connectionStringName].ConnectionString;
-  _connection := new FbConnection(connectionString);
+  _connectionstring := ConfigurationManager.ConnectionStrings[connectionStringName].ConnectionString;
+  //_connection := new FbConnection(_connectionstring);
+ // _connection.StateChange += dbConnection_StateChange;
 end;
 
 method FBDatabase.Execute(commandText: String; parameters: Dictionary<String, Object>): Integer;
@@ -114,7 +123,7 @@ begin
     var command:FbCommand := CreateCommand(commandText, parameters);
     fresult := command.ExecuteNonQuery();
   finally
-    _connection.Close();
+   // _connection.Close();
   end;
   exit fresult;
 end;
@@ -179,31 +188,31 @@ end;
 
 method FBDatabase.EnsureConnectionOpen;
 begin
-  var retries := 3;
-  if _connection.State = ConnectionState.Open then begin
-    exit;
-  end
-  else begin
-    while (retries >= 0) and (_connection.State <> ConnectionState.Open) do begin
-      _connection.Open();
-      dec(retries);
-    end;
-  end;
+//  var retries := 3;
+//  if _connection.State = ConnectionState.Open then begin
+//    exit;
+//  end
+//  else begin
+//    while (retries >= 0) and (_connection.State <> ConnectionState.Open) do begin
+//      _connection.Open();
+//      dec(retries);
+//    end;
+//  end;
 end;
 
 method FBDatabase.EnsureConnectionClosed;
 begin
-  if _connection.State = ConnectionState.Open then begin
-    _connection.Close();
-  end;
+//  if _connection.State = ConnectionState.Open then begin
+//   //yeps !!! _connection.Close();
+//  end;
 end;
 
 method FBDatabase.CreateCommand(commandText: String; parameters: Dictionary<String, Object>): FbCommand;
 begin
-  var command: FbCommand := _connection.CreateCommand();
-  command.CommandText := commandText;
-  AddParameters(command, parameters);
-  exit command;
+//  var command: FbCommand := _connection.CreateCommand();
+//  command.CommandText := commandText;
+//  AddParameters(command, parameters);
+//  exit command;
 end;
 
 class method FBDatabase.AddParameters(command: FbCommand; parameters: Dictionary<String, Object>);
@@ -227,10 +236,24 @@ end;
 
 method FBDatabase.Dispose;
 begin
-  if _connection <> nil then begin
-    _connection.Dispose();
-    _connection := nil;
-  end;
+//  if _connection <> nil then begin
+//    _connection.Dispose();
+//    _connection := nil;
+//  end;
 end;
+
+method FBDatabase.dbConnection_StateChange(sender: Object; ev: StateChangeEventArgs);
+begin
+var ar : String;
+
+ar := ev.CurrentState.ToString;
+if ar = 'Closed' then
+  ar := 'merdouille';
+
+
+end;
+
+
+
 
 end.

@@ -33,15 +33,23 @@ type
 
     class method ExecuteNonQuery(transaction: FbTransaction; commandType: CommandType; commandText: System.String; params commandParameters: array of FbParameter): System.Int32;
 
+    class method ExecuteNonQuery(connection: FbConnection; commandType: CommandType; commandText: System.String; params commandParameters: array of FbParameter): System.Int32;
+   
     class method ExecuteReader(connectionString: System.String; commandText: System.String; params commandParameters: array of FbParameter): FbDataReader;
 
     class method ExecuteReader(connectionString: System.String; commandType: CommandType; commandText: System.String; params commandParameters: array of FbParameter): FbDataReader;
+
+    class method ExecuteReader(connection: FbConnection; commandText: System.String; params commandParameters: array of FbParameter): FbDataReader;
+
+    class method ExecuteReader(connection: FbConnection; commandType: CommandType; commandText: System.String; params commandParameters: array of FbParameter): FbDataReader;
 
     class method ExecuteReaderW(connectionString: System.String; commandType: CommandType; commandText: System.String; params commandParameters: array of FbParameter): FbDataReader;
 
     class method ExecuteScalar(connectionString: System.String; commandText: System.String; params commandParameters: array of FbParameter): System.Object;
 
     class method ExecuteScalar(connectionString: System.String; commandType: CommandType; commandText: System.String; params commandParameters: array of FbParameter): System.Object;
+
+    class method ExecuteScalar(connection: FbConnection; commandType: CommandType; commandText: System.String; params commandParameters: array of FbParameter): System.Object;
 
     class method ExecuteDataset(connectionString: System.String; commandText: System.String; params commandParameters: array of FbParameter): DataSet;
 
@@ -160,7 +168,7 @@ begin
         try
         rowsAffected:= cmd.ExecuteNonQuery();
         transaction.Commit();
-        transaction.Dispose;
+        //transaction.Dispose;
         except         on ex: FbException do begin
           rowsAffected := 0;
           transaction.Rollback;
@@ -174,6 +182,33 @@ begin
       end
     end
   end
+end;
+
+class method FBSqlHelper.ExecuteNonQuery(connection: FbConnection; commandType: CommandType; commandText: System.String; params commandParameters: array of FbParameter): System.Int32;
+begin
+    if (connection = nil) then raise new ArgumentNullException('connectionString');
+    if ((connection <> nil)) and ((connection.State = ConnectionState.Closed)) then
+    connection.Open();
+    using transaction: FbTransaction := connection.BeginTransaction() do begin
+      using cmd: FbCommand := new FbCommand() do begin
+        PrepareCommand(cmd, connection, transaction, commandType, commandText, commandParameters);
+        var rowsAffected: System.Int32 := 0;      
+        try
+        rowsAffected:= cmd.ExecuteNonQuery();
+        transaction.Commit();
+        //transaction.Dispose;
+        except         on ex: FbException do begin
+          rowsAffected := 0;
+          transaction.Rollback;
+          transaction.Dispose;
+          connection.Close;
+          raise new Exception('ExecuteNonQuery '+#13#10+commandText+#13#10+ex, ex)
+        end;
+        end;
+        exit rowsAffected
+      end
+    end
+  
 end;
 
 class method FBSqlHelper.ExecuteNonQuery(transaction: FbTransaction; commandType: CommandType; commandText: System.String; params commandParameters: array of FbParameter): System.Int32;
@@ -215,7 +250,7 @@ begin
         try
           if useTransaction then begin
             transaction.Commit();
-            transaction.Dispose();
+            //transaction.Dispose();
             transaction := nil;
           end;
         except        on ex: FbException do begin
@@ -236,6 +271,58 @@ begin
         connection.Close()
       end;
       connection.Dispose;
+      raise 
+    end;
+  end
+end;
+
+class method FBSqlHelper.ExecuteReader(connection: FbConnection; commandText: System.String; params commandParameters: array of FbParameter): FbDataReader;
+begin
+  exit ExecuteReader(connection, CommandType.Text, commandText, commandParameters)
+end;
+
+class method FBSqlHelper.ExecuteReader(connection: FbConnection; commandType: CommandType; commandText: System.String; params commandParameters: array of FbParameter): FbDataReader;
+begin
+  if (connection = nil)  then    raise new ArgumentNullException('connection');
+  if (connection.ConnectionString = nil)  then    raise new ArgumentNullException('connectionstring is null');
+  try    
+   if ((connection <> nil)) and ((connection.State = ConnectionState.Closed)) then
+    connection.Open();
+    var command: FbCommand := new FbCommand();
+    var transaction: FbTransaction := nil;
+    var useTransaction: System.Boolean := ((commandText.Contains('EXECUTE')) or (commandText.Contains('INSERT')) or (commandText.Contains('UPDATE')) or (commandText.Contains('DELETE')));
+    if useTransaction then begin
+      transaction := connection.BeginTransaction()
+    end;
+    PrepareCommand(command, connection, transaction, commandType, commandText, commandParameters);    
+     
+    var rd : FbDataReader := command.ExecuteReader(CommandBehavior.CloseConnection);
+ 
+    if transaction <> nil then begin
+        try
+          if useTransaction then begin
+            transaction.Commit();
+            //transaction.Dispose();
+            //transaction := nil;
+          end;
+        except        on ex: FbException do begin
+          transaction.Rollback;
+          transaction.Dispose;
+          if ((connection <> nil)) and ((connection.State = ConnectionState.Open)) then begin
+             connection.Close;
+             //connection.Dispose;
+          end;
+          raise new Exception('execute Reader', ex)
+        end;
+        end;
+      end;
+     exit rd;
+
+  except on ex: FbException do begin
+      if ((connection <> nil)) and ((connection.State = ConnectionState.Open)) then begin
+        connection.Close()
+      end;
+      //connection.Dispose;
       raise 
     end;
   end
@@ -330,6 +417,51 @@ begin
 
       exit ob;
 
+      except begin
+      if ((connection <> nil)) and ((connection.State = ConnectionState.Open)) then begin
+        connection.Close()
+      end;
+      raise 
+    end;
+    end;
+    end;
+
+  end
+end;
+
+class method FBSqlHelper.ExecuteScalar(connection: FbConnection; commandType: CommandType; commandText: System.String; params commandParameters: array of FbParameter): System.Object;
+begin
+  if (connection = nil) then    raise new ArgumentNullException('connection');
+  
+  using connection do begin
+   if ((connection <> nil)) and ((connection.State = ConnectionState.Closed)) then
+   connection.Open();
+    var transaction: FbTransaction := nil;
+    var useTransaction: System.Boolean := ((commandText.Contains('EXECUTE')) or (commandText.Contains('INSERT')) or (commandText.Contains('UPDATE')) or (commandText.Contains('DELETE')));
+    if useTransaction then begin
+      transaction := connection.BeginTransaction()
+    end;
+
+    using command: FbCommand := new FbCommand() do begin
+       try   
+      PrepareCommand(command, connection, transaction, commandType, commandText, commandParameters);
+      
+      var ob : System.Object:= command.ExecuteScalar();
+
+      if transaction <> nil then begin
+        try
+        if useTransaction then begin
+          transaction.Commit();
+          transaction.Dispose();
+          transaction := nil;
+        end;
+        except        on ex: FbException do begin
+          connection.Close;
+          raise new Exception('ExecuteScalar', ex)
+        end;
+        end;
+      end;
+      exit ob;
       except begin
       if ((connection <> nil)) and ((connection.State = ConnectionState.Open)) then begin
         connection.Close()

@@ -12,6 +12,7 @@ type
   UserRolesTable = public class
   private
     var _database: FBDatabase;
+    function uuidTXTtoguid(fvalue : String) : Guid;
   public
     /// <summary>
     /// Constructor that takes a FBDatabase instance
@@ -42,7 +43,9 @@ type
 implementation
 
 uses 
-  System.Data;
+  System.Data, 
+  System.Text,
+  FirebirdSql.Data.FirebirdClient;
 
 constructor UserRolesTable(database: FBDatabase);
 begin
@@ -53,9 +56,12 @@ method UserRolesTable.FindByUserId(userId: String): List<String>;
 begin
   var roles: List<String> := new List<String>();
   var commandText: String := 'Select Roles.Name from UserRoles, Roles where UserRoles.UserId = @userId and UserRoles.RoleId = Roles.Id';
-  var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
-  parameters.Add('@userId', userId);
-  var row : IDataReader := _database.QueryToReader(commandText, parameters);
+  var arParams: array of FbParameter := new FbParameter[1];
+   arParams[0] := new FbParameter('@userId',FbDbType.Guid);
+   arParams[0].Direction := ParameterDirection.Input;
+   arParams[0].Charset := FbCharset.Octets ;
+   arParams[0].Value := uuidTXTtoguid(userId);
+  var row : IDataReader := FBSqlHelper.ExecuteReader(_database.connectionString, commandText, arParams);
   while row.Read do begin
     roles.Add(row['Name'].ToString);
   end;
@@ -65,18 +71,36 @@ end;
 method UserRolesTable.Delete(userId: String): Integer;
 begin
   var commandText: String := 'Delete from UserRoles where UserId = @userId';
-  var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
-  parameters.Add('UserId', userId);
-  exit _database.Execute(commandText, parameters);
+  var arParams: array of FbParameter := new FbParameter[1];
+   arParams[0] := new FbParameter('@userId',FbDbType.Guid);
+   arParams[0].Direction := ParameterDirection.Input;
+   arParams[0].Charset := FbCharset.Octets ;
+   arParams[0].Value := uuidTXTtoguid(userId);
+   var rowsAffected: System.Int32 := FBSqlHelper.ExecuteNonQuery(_database.connectionString, CommandType.Text,commandText, arParams);
+   exit rowsAffected;
 end;
 
 method UserRolesTable.Insert(user: IdentityUser; roleId: String): Integer;
 begin
-  var commandText: String := 'Insert into UserRoles (UserId, RoleId) values (@userId, @roleId)';
-  var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
-  parameters.Add('userId', user.Id);
-  parameters.Add('roleId', roleId);
-  exit _database.Execute(commandText, parameters);
+   var sqlCommand: StringBuilder := new StringBuilder;
+   sqlCommand.Append('INSERT INTO userroles ( USERID, ROLEID)');
+   sqlCommand.Append('  VALUES ( @USERID, @ROLEID);');
+   var arParams: array of FbParameter := new FbParameter[2];
+   arParams[0] := new FbParameter('@USERID',FbDbType.Guid);
+   arParams[0].Direction := ParameterDirection.Input;
+   arParams[0].Charset := FbCharset.Octets ;
+   arParams[0].Value := uuidTXTtoguid(user.Id);
+   arParams[1] := new FbParameter('@ROLEID',FbDbType.Guid);
+   arParams[1].Direction := ParameterDirection.Input;
+   arParams[1].Charset := FbCharset.Octets ;
+   arParams[1].Value := uuidTXTtoguid(roleId);
+   var rowsAffected: System.Int32 := FBSqlHelper.ExecuteNonQuery(_database.connectionString, CommandType.Text, sqlCommand.ToString(), arParams);
+   exit rowsAffected;
+end;
+
+function UserRolesTable.uuidTXTtoguid(fvalue : String) : Guid;
+begin
+  exit new Guid(fvalue);
 end;
 
 end.

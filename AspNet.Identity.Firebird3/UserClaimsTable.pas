@@ -13,6 +13,7 @@ type
   UserClaimsTable = public class
   private
     var _database: FBDatabase;
+    function uuidTXTtoguid(fvalue : String) : Guid;
   public
     /// <summary>
     /// Constructor that takes a FBDatabase instance
@@ -49,6 +50,10 @@ type
 
 implementation
 
+uses 
+  System.Data,
+  FirebirdSql.Data.FirebirdClient;
+
 constructor UserClaimsTable(database: FBDatabase);
 begin
   _database := database;
@@ -58,11 +63,14 @@ method UserClaimsTable.FindByUserId(userId: String): ClaimsIdentity;
 begin
   var claims: ClaimsIdentity := new ClaimsIdentity();
   var commandText: String := 'Select * from UserClaims where UserId = @userId';
-  var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
-  parameters.Add('@UserId', userId);
-  var rows := _database.Query(commandText, parameters);
-  for each row in rows do begin
-    var claim: Claim := new Claim(row['ClaimType'], row['ClaimValue']);
+  var arParams: array of FbParameter := new FbParameter[1];
+   arParams[0] := new FbParameter('@userId',FbDbType.Guid);
+   arParams[0].Direction := ParameterDirection.Input;
+   arParams[0].Charset := FbCharset.Octets ;
+   arParams[0].Value := uuidTXTtoguid(userId);
+  var row : IDataReader := FBSqlHelper.ExecuteReader(_database.connectionString, commandText, arParams);
+  while row.Read do begin
+    var claim: Claim := new Claim(row['ClaimType'].ToString, row['ClaimValue'].ToString);
     claims.AddClaim(claim);
   end;
   exit claims;
@@ -71,29 +79,57 @@ end;
 method UserClaimsTable.Delete(userId: String): Integer;
 begin
   var commandText: String := 'Delete from UserClaims where UserId = @userId';
-  var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
-  parameters.Add('userId', userId);
-  exit _database.Execute(commandText, parameters);
+  var arParams: array of FbParameter := new FbParameter[1];
+   arParams[0] := new FbParameter('@userId',FbDbType.Guid);
+   arParams[0].Direction := ParameterDirection.Input;
+   arParams[0].Charset := FbCharset.Octets ;
+   arParams[0].Value := uuidTXTtoguid(userId);
+   var rowsAffected: System.Int32 := FBSqlHelper.ExecuteNonQuery(_database.connectionString, CommandType.Text,commandText, arParams);
+   exit rowsAffected;
 end;
 
 method UserClaimsTable.Insert(userClaim: Claim; userId: String): Integer;
 begin
   var commandText: String := 'Insert into UserClaims (ClaimValue, ClaimType, UserId) values (@value, @type, @userId)';
-  var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
-  parameters.Add('value', userClaim.Value);
-  parameters.Add('type', userClaim.&Type);
-  parameters.Add('userId', userId);
-  exit _database.Execute(commandText, parameters);
+  var arParams: array of FbParameter := new FbParameter[3];
+   arParams[0] := new FbParameter('@userId',FbDbType.Guid);
+   arParams[0].Direction := ParameterDirection.Input;
+   arParams[0].Charset := FbCharset.Octets ;
+   arParams[0].Value := uuidTXTtoguid(userId);
+   arParams[1] := new FbParameter('@type',FbDbType.VarChar, 254);
+   arParams[1].Direction := ParameterDirection.Input;
+   arParams[1].Charset := FbCharset.Iso8859_1 ;
+   arParams[1].Value := userClaim.Type;
+   arParams[2] := new FbParameter('@value',FbDbType.VarChar, 254);
+   arParams[2].Direction := ParameterDirection.Input;
+   arParams[2].Charset := FbCharset.Iso8859_1 ;
+   arParams[2].Value :=  userClaim.Value;
+   var rowsAffected: System.Int32 := FBSqlHelper.ExecuteNonQuery(_database.connectionString, commandText, arParams);
+   exit rowsAffected;
 end;
 
 method UserClaimsTable.Delete(user: IdentityUser; claim: Claim): Integer;
 begin
   var commandText: String := 'Delete from UserClaims where UserId = @userId and @ClaimValue = @value and ClaimType = @type';
-  var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
-  parameters.Add('userId', user.Id);
-  parameters.Add('value', claim.Value);
-  parameters.Add('type', claim.Type);
-  exit _database.Execute(commandText, parameters);
+  var arParams: array of FbParameter := new FbParameter[3];
+   arParams[0] := new FbParameter('@userId',FbDbType.Guid);
+   arParams[0].Direction := ParameterDirection.Input;
+   arParams[0].Charset := FbCharset.Octets ;
+   arParams[0].Value := uuidTXTtoguid(user.Id);
+   arParams[1] := new FbParameter('@type',FbDbType.VarChar, 254);
+   arParams[1].Direction := ParameterDirection.Input;
+   arParams[1].Charset := FbCharset.Iso8859_1 ;
+   arParams[1].Value := claim.Type;
+   arParams[2] := new FbParameter('@ClaimValue',FbDbType.VarChar, 254);
+   arParams[2].Direction := ParameterDirection.Input;
+   arParams[2].Charset := FbCharset.Iso8859_1 ;
+   arParams[2].Value :=  claim.Value;
+   var rowsAffected: System.Int32 := FBSqlHelper.ExecuteNonQuery(_database.connectionString, commandText, arParams);
+   exit rowsAffected;
 end;
 
+function UserClaimsTable.uuidTXTtoguid(fvalue : String) : Guid;
+begin
+  exit new Guid(fvalue);
+end;
 end.

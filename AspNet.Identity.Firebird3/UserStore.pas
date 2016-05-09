@@ -310,7 +310,7 @@ end;
 constructor UserStore<TUser>(fdatabase: FBDatabase);
 begin
   Database := fdatabase;
-  userTable := new userTable<TUser>(fdatabase);
+  userTable := new userTable<TUser>(Database);
   roleTable := new RoleTable(Database);
   userRolesTable := new UserRolesTable(Database);
   userClaimsTable := new UserClaimsTable(Database);
