@@ -13,6 +13,7 @@ type
   RoleTable = public class
   private
     var _database: FBDatabase;
+    function uuidTXTtoguid(fvalue : String) : Guid;
   public
     /// <summary>
     /// Constructor that takes a FBDatabase instance
@@ -60,6 +61,10 @@ type
 
 implementation
 
+uses 
+  System.Data,
+  FirebirdSql.Data.FirebirdClient;
+
 constructor RoleTable(database: FBDatabase);
 begin
   _database := database;
@@ -67,40 +72,57 @@ end;
 
 method RoleTable.Delete(roleId: String): Integer;
 begin
-  var commandText: String := 'Delete from Roles where Id = @id';
-  var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
-  parameters.Add('@id', roleId);
-  exit _database.Execute(commandText, parameters);
+  var commandText: String := 'Delete from Roles where Id = @roleId';
+  var arParams: array of FbParameter := new FbParameter[1];
+   arParams[0] := new FbParameter('@roleId',FbDbType.Guid);
+   arParams[0].Direction := ParameterDirection.Input;
+   arParams[0].Charset := FbCharset.Octets ;
+   arParams[0].Value := uuidTXTtoguid(roleId);
+   var rowsAffected: System.Int32 := FBSqlHelper.ExecuteNonQuery(_database.connectionString, CommandType.Text,commandText, arParams);
+   exit rowsAffected;
 end;
 
 method RoleTable.Insert(role: IdentityRole): Integer;
 begin
-  var commandText: String := 'Insert into Roles (Id, Name) values (@id, @name)';
-  var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
-  parameters.Add('@name', role.Name);
-  parameters.Add('@id', role.Id);
-  exit _database.Execute(commandText, parameters);
+  var commandText: String := 'Insert into Roles (Id, Name) values (@ID, @name)';
+  var arParams: array of FbParameter := new FbParameter[2];
+   arParams[0] := new FbParameter('@ID',FbDbType.Guid);
+   arParams[0].Direction := ParameterDirection.Input;
+   arParams[0].Charset := FbCharset.Octets ;
+   arParams[0].Value := uuidTXTtoguid(role.Id);
+   arParams[1] := new FbParameter('@name',FbDbType.VarChar, 75);
+   arParams[1].Direction := ParameterDirection.Input;
+   arParams[1].Charset := FbCharset.Iso8859_1 ;
+   arParams[1].Value := role.Name;
+   var rowsAffected: System.Int32 := FBSqlHelper.ExecuteNonQuery(_database.connectionString, CommandType.Text,commandText, arParams);
+   exit rowsAffected;
 end;
 
 method RoleTable.GetRoleName(roleId: String): String;
 begin
-  var commandText: String := 'Select Name from Roles where Id = @id';
-  var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
-  parameters.Add('@id', roleId);
-  exit _database.GetStrValue(commandText, parameters);
+  var commandText: String := 'Select Name from Roles where Id = @ID rows 1';
+  var arParams: array of FbParameter := new FbParameter[1];
+   arParams[0] := new FbParameter('@ID',FbDbType.Guid);
+   arParams[0].Direction := ParameterDirection.Input;
+   arParams[0].Charset := FbCharset.Octets ;
+   arParams[0].Value := uuidTXTtoguid(roleId);
+   var obj : Object := FBSqlHelper.ExecuteScalar(_database.connectionString,CommandType.Text, commandText,arParams);
+   if (obj = nil) or (obj = DBNull.Value) then exit String.Empty;
+   exit Convert.ToString(obj);
 end;
 
 method RoleTable.GetRoleId(roleName: String): String;
 begin
   var roleId: String := nil;
-  var commandText: String := 'Select Id from Roles where Name = @name';
-  var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
-  parameters.Add('@name', roleName);
-  var fresult := _database.QueryValue(commandText, parameters);
-  if fresult <> nil then begin
-    exit Convert.ToString(fresult);
-  end;
-  exit roleId;
+  var commandText: String := 'Select Id from Roles where Name = @name rows 1';
+   var arParams: array of FbParameter := new FbParameter[1];
+   arParams[0] := new FbParameter('@name',FbDbType.VarChar, 75);
+   arParams[0].Direction := ParameterDirection.Input;
+   arParams[0].Charset := FbCharset.Iso8859_1 ;
+   arParams[0].Value := roleName;
+   var obj : Object := FBSqlHelper.ExecuteScalar(_database.connectionString,CommandType.Text, commandText,arParams);
+   if (obj = nil) or (obj = DBNull.Value) then exit nil;
+   exit new Guid(obj.ToString).ToString
 end;
 
 method RoleTable.GetRoleById(roleId: String): IdentityRole;
@@ -125,10 +147,25 @@ end;
 
 method RoleTable.Update(role: IdentityRole): Integer;
 begin
-  var commandText: String := 'Update Roles set Name = @name where Id = @id';
-  var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
-  parameters.Add('@id', role.Id);
-  exit _database.Execute(commandText, parameters);
+  var commandText: String := 'Update Roles set Name = @name where Id = @ID';
+  var arParams: array of FbParameter := new FbParameter[2];
+   arParams[0] := new FbParameter('@ID',FbDbType.Guid);
+   arParams[0].Direction := ParameterDirection.Input;
+   arParams[0].Charset := FbCharset.Octets ;
+   arParams[0].Value := uuidTXTtoguid(role.Id);
+   arParams[1] := new FbParameter('@name',FbDbType.VarChar, 75);
+   arParams[1].Direction := ParameterDirection.Input;
+   arParams[1].Charset := FbCharset.Iso8859_1 ;
+   arParams[1].Value := role.Name;
+   var rowsAffected: System.Int32 := FBSqlHelper.ExecuteNonQuery(_database.connectionString, CommandType.Text,commandText, arParams);
+   exit rowsAffected;
+end;
+
+
+
+function RoleTable.uuidTXTtoguid(fvalue : String) : Guid;
+begin
+  exit new Guid(fvalue);
 end;
 
 end.

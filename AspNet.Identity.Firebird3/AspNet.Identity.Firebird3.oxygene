@@ -109,5 +109,10 @@
       <HintPath>..\NETProvider_4.7.0.0\src\FirebirdSql.Data.FirebirdClient\bin\Debug\FirebirdSql.Data.FirebirdClient.dll</HintPath>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Firebird3.sql">
+      <SubType>Content</SubType>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Oxygene\RemObjects.Oxygene.Echoes.targets" />
 </Project>
