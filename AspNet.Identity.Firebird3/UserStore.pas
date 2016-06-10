@@ -79,7 +79,7 @@ type
     /// </summary>
     /// <param name="user"></param>
     /// <returns></returns>
-    method GetClaimsAsync(user: TUser): Task<iList<Claim>>;
+    method GetClaimsAsync(user: TUser): Task<IList<Claim>>;
     /// <summary>
     /// Removes a claim froma user
     /// </summary>
@@ -125,7 +125,7 @@ type
     /// </summary>
     /// <param name="user"></param>
     /// <returns></returns>
-    method GetRolesAsync(user: TUser): Task<iList<String>>;
+    method GetRolesAsync(user: TUser): Task<IList<String>>;
     /// <summary>
     /// Verifies if a user is in a role
     /// </summary>
@@ -310,7 +310,7 @@ end;
 constructor UserStore<TUser>(fdatabase: FBDatabase);
 begin
   Database := fdatabase;
-  userTable := new userTable<TUser>(Database);
+  userTable := new UserTable<TUser>(Database);
   roleTable := new RoleTable(Database);
   userRolesTable := new UserRolesTable(Database);
   userClaimsTable := new UserClaimsTable(Database);
@@ -381,7 +381,7 @@ begin
   exit Task.FromResult(userClaimsTable.Insert(claim, user.Id));
 end;
 
-method UserStore<TUser>.GetClaimsAsync(user: TUser): Task<iList<Claim>>;
+method UserStore<TUser>.GetClaimsAsync(user: TUser): Task<IList<Claim>>;
 begin
   var identity: ClaimsIdentity := userClaimsTable.FindByUserId(user.Id);
   exit Task.FromResult(identity.Claims.ToList as IList<Claim>);
@@ -432,7 +432,7 @@ begin
   if user = nil then begin
     raise new ArgumentNullException('user');
   end;
-  var logins: iList<UserLoginInfo> := userLoginsTable.FindByUserId(user.Id);
+  var logins: IList<UserLoginInfo> := userLoginsTable.FindByUserId(user.Id);
   if logins <> nil then begin
     exit Task.FromResult(logins);
   end;
@@ -466,12 +466,12 @@ begin
   exit Task.FromResult(0);
 end;
 
-method UserStore<TUser>.GetRolesAsync(user: TUser): Task<iList<String>>;
+method UserStore<TUser>.GetRolesAsync(user: TUser): Task<IList<String>>;
 begin
   if user = nil then begin
     raise new ArgumentNullException('user');
   end;
-  var roles: iList<String> := userRolesTable.FindByUserId(user.Id);
+  var roles: IList<String> := userRolesTable.FindByUserId(user.Id);
   begin
     if roles <> nil then begin
       exit Task.FromResult(roles);
@@ -568,7 +568,7 @@ begin
   if String.IsNullOrEmpty(email) then begin
     raise new ArgumentNullException('email');
   end;
-  var fresult:List<TUser> := userTable.GetUserByEmail(email) as list<TUser>;
+  var fresult:List<TUser> := userTable.GetUserByEmail(email) as List<TUser>;
   if (fresult <> nil) and (fresult.Count<> 0) then begin
     exit Task.FromResult<TUser>(fresult[0]);
   end;

@@ -55,6 +55,7 @@
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="mscorlib" />
     <Reference Include="Microsoft.AspNet.Identity.Core">
       <HintPath>..\..\WingtipToysForFireBird3\WingtipToysForFireBird3\bin\Microsoft.AspNet.Identity.Core.dll</HintPath>
     </Reference>
@@ -114,5 +115,8 @@
       <SubType>Content</SubType>
     </Content>
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Oxygene\RemObjects.Oxygene.Echoes.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Echoes.targets" />
+  <PropertyGroup>
+    <PreBuildEvent />
+  </PropertyGroup>
 </Project>
