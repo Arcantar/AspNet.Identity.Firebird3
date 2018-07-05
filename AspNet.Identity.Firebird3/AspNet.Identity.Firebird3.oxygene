@@ -18,24 +18,22 @@
     <StartupClass />
     <InternalAssemblyName />
     <ApplicationIcon />
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <Optimize>false</Optimize>
-    <OutputPath>.\bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;TRACE;</DefineConstants>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>
+    </DefineConstants>
     <GeneratePDB>True</GeneratePDB>
     <GenerateMDB>True</GenerateMDB>
-    <EnableAsserts>True</EnableAsserts>
-    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
     <CaptureConsoleOutput>False</CaptureConsoleOutput>
     <StartMode>Project</StartMode>
-    <RegisterForComInterop>False</RegisterForComInterop>
     <CpuType>anycpu</CpuType>
     <RuntimeVersion>v25</RuntimeVersion>
     <XmlDoc>False</XmlDoc>
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
-    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <WarnOnCaseMismatch>False</WarnOnCaseMismatch>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>
@@ -52,11 +50,21 @@
     <XmlDoc>False</XmlDoc>
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
-    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <WarnOnCaseMismatch>False</WarnOnCaseMismatch>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FirebirdSql.Data.FirebirdClient">
+      <HintPath>..\..\tory\FirebirdSql.Data.FirebirdClient\bin\Debug\net452\FirebirdSql.Data.FirebirdClient.dll</HintPath>
+    </Reference>
+    <Reference Include="mscorlib" />
     <Reference Include="Microsoft.AspNet.Identity.Core">
-      <HintPath>..\..\WingtipToysForFireBird3\WingtipToysForFireBird3\bin\Microsoft.AspNet.Identity.Core.dll</HintPath>
+      <HintPath>..\..\WebFormTest1\packages\Microsoft.AspNet.Identity.Core.2.1.0\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Owin">
+      <HintPath>..\..\WebFormTest1\packages\Microsoft.AspNet.Identity.Owin.2.1.0\lib\net45\Microsoft.AspNet.Identity.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\WebFormTest1\packages\Newtonsoft.Json.6.0.3\lib\netcore45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -102,17 +110,18 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NETProvider_4.7.0.0\src\FirebirdSql.Data.FirebirdClient\FirebirdSql.Data.FirebirdClient.csproj">
-      <Name>FirebirdSql.Data.FirebirdClient</Name>
-      <Project>{326a24f9-6259-45db-835c-18db80728460}</Project>
-      <Private>True</Private>
-      <HintPath>..\NETProvider_4.7.0.0\src\FirebirdSql.Data.FirebirdClient\bin\Debug\FirebirdSql.Data.FirebirdClient.dll</HintPath>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
+    <Content Include="app.config">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="Firebird3.sql">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="packages.config">
+      <SubType>Content</SubType>
+    </Content>
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Oxygene\RemObjects.Oxygene.Echoes.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Echoes.targets" />
+  <PropertyGroup>
+    <PreBuildEvent />
+  </PropertyGroup>
 </Project>

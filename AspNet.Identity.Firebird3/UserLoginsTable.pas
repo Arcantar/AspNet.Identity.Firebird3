@@ -67,35 +67,20 @@ end;
 
 method UserLoginsTable.Delete(user: IdentityUser; login: UserLoginInfo): Integer;
 begin
-  var commandText: String := 'Delete from UserLogins where UserId = @USERID and LoginProvider = @LOGINPROVIDER and ProviderKey = @PROVIDERKEY';
-  var arParams: array of FbParameter := new FbParameter[3];
-   arParams[0] := new FbParameter('@LOGINPROVIDER',FbDbType.VarChar, 128);
-   arParams[0].Direction := ParameterDirection.Input;
-   arParams[0].Charset := FbCharset.Iso8859_1 ; 
-   arParams[0].Value := login.LoginProvider;
-   arParams[1] := new FbParameter('@PROVIDERKEY',FbDbType.VarChar, 128);
-   arParams[1].Direction := ParameterDirection.Input;
-   arParams[1].Charset := FbCharset.Iso8859_1 ;
-   arParams[1].Value := login.ProviderKey;
-   arParams[2] := new FbParameter('@USERID',FbDbType.Guid);
-   arParams[2].Direction := ParameterDirection.Input;
-   arParams[2].Charset := FbCharset.Octets ;
-   arParams[2].Value := new Guid(user.Id);
-   var rowsAffected: System.Int32 := FBSqlHelper.ExecuteNonQuery(_database.connectionString, CommandType.Text,commandText, arParams);
-   exit rowsAffected;
+  var commandText: String := 'Delete from UserLogins where UserId = @userId and LoginProvider = @loginProvider and ProviderKey = @providerKey';
+  var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
+  parameters.Add('UserId', user.Id);
+  parameters.Add('loginProvider', login.LoginProvider);
+  parameters.Add('providerKey', login.ProviderKey);
+  exit _database.Execute(commandText, parameters);
 end;
 
 method UserLoginsTable.Delete(userId: String): Integer;
 begin
-  var commandText: String := 'Delete from UserLogins where UserId = @USERID';
-  var arParams: array of FbParameter := new FbParameter[1];
-   arParams[0] := new FbParameter('@USERID',FbDbType.Guid);
-   arParams[0].Direction := ParameterDirection.Input;
-   arParams[0].Charset := FbCharset.Octets ;
-   arParams[0].Value := new Guid(userId);
-  var rowsAffected: System.Int32 := FBSqlHelper.ExecuteNonQuery(_database.connectionString, CommandType.Text,commandText, arParams);
-  exit rowsAffected;
-
+  var commandText: String := 'Delete from UserLogins where UserId = @userId';
+  var parameters: Dictionary<String, Object> := new Dictionary<String, Object>();
+  parameters.Add('UserId', userId);
+  exit _database.Execute(commandText, parameters);
 end;
 
 method UserLoginsTable.Insert(user: IdentityUser; login: UserLoginInfo): Integer;
@@ -116,7 +101,7 @@ begin
    arParams[2] := new FbParameter('@USERID',FbDbType.Guid);
    arParams[2].Direction := ParameterDirection.Input;
    arParams[2].Charset := FbCharset.Octets ;
-   arParams[2].Value := user.Id;
+   arParams[2].Value := new Guid(user.Id);
    var rowsAffected: System.Int32 := FBSqlHelper.ExecuteNonQuery(_database.connectionString, CommandType.Text,commandText, arParams);
    exit rowsAffected;
 end;

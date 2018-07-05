@@ -132,8 +132,8 @@ begin
       connection.Open();
       try
         var batch: FbBatchExecution := new FbBatchExecution(connection);      
-        for each cmd: System.String in script.Results do begin
-          batch.SqlStatements.Add(cmd);
+        for each cmd: FbStatement in script.Results do begin
+          batch.Statements.Add(cmd);
         end;
         batch.Execute(true);// true = auto commit !
       finally
@@ -289,7 +289,7 @@ begin
    if ((connection <> nil)) and ((connection.State = ConnectionState.Closed)) then
     connection.Open();
     var command: FbCommand := new FbCommand();
-    var transaction: FbTransaction := nil;
+    var transaction: FbTransaction ;//:= nil;
     var useTransaction: System.Boolean := ((commandText.Contains('EXECUTE')) or (commandText.Contains('INSERT')) or (commandText.Contains('UPDATE')) or (commandText.Contains('DELETE')));
     if useTransaction then begin
       transaction := connection.BeginTransaction()
@@ -338,7 +338,7 @@ begin
 
     var command: FbCommand := new FbCommand();
 
-    var transaction: FbTransaction := nil;
+    var transaction: FbTransaction;// := nil;
     var useTransaction: System.Boolean := true;
     if useTransaction then begin
       transaction := connection.BeginTransaction;
@@ -386,7 +386,7 @@ begin
   
   using connection: FbConnection := new FbConnection(connectionString) do begin
    connection.Open();
-    var transaction: FbTransaction := nil;
+    var transaction: FbTransaction ;//:= nil;
     var useTransaction: System.Boolean := ((commandText.Contains('EXECUTE')) or (commandText.Contains('INSERT')) or (commandText.Contains('UPDATE')) or (commandText.Contains('DELETE')));
     if useTransaction then begin
       transaction := connection.BeginTransaction()
@@ -436,7 +436,7 @@ begin
   using connection do begin
    if ((connection <> nil)) and ((connection.State = ConnectionState.Closed)) then
    connection.Open();
-    var transaction: FbTransaction := nil;
+    var transaction: FbTransaction ;//:= nil;
     var useTransaction: System.Boolean := ((commandText.Contains('EXECUTE')) or (commandText.Contains('INSERT')) or (commandText.Contains('UPDATE')) or (commandText.Contains('DELETE')));
     if useTransaction then begin
       transaction := connection.BeginTransaction()
